@@ -2,7 +2,7 @@
 
 Draft for Demo QA port. Research date: **10 September 2026**. English (skills). App UI: **Norwegian (nb/no)** — market NO forced for this test. Brand site remains https://caiacosmetics.se/.
 
-**Build gate:** CLOSED — waiting Demo QA **kjør/stopp** on audience + 1–2 job flows.
+**Build gate:** OPEN — Demo QA **kjør** 10 Sep 2026.
 
 **New project.** Slug `caiacosmetics-6`, repo `third-act/caiacosmetics-6`. Do **not** reuse `caiacosmetics` / `-2` / `-3` / `-5` code, seed, photos, or URLs. QA: https://www.thirdact.no/demo/caiacosmetics-6. Customer: https://www.thirdact.no/caiacosmetics-6 (form/market **NO** → `.no`). Skills pin: `149f83a`. Track: **Demo Web / Cursor-only** (Composer 2.5 + Grok 4.6 if thin). **No Opus / Claude / Other Models.**
 
