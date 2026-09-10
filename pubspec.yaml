@@ -21,6 +21,7 @@ flutter:
   assets:
     - assets/products/
     - assets/brand/
+    - assets/scan/
   fonts:
     - family: Inter
       fonts:

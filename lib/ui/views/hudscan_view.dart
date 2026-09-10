@@ -23,34 +23,30 @@ class _HudscanViewState extends State<HudscanView> {
     return ListenableBuilder(
       listenable: scan,
       builder: (context, _) {
-        return CustomScrollView(
-          slivers: [
-            SliverPadding(
-              padding: AppLayout.tabContentPadding,
-              sliver: SliverToBoxAdapter(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Hudscan',
-                    style: Theme.of(context).textTheme.displaySmall,
-                  ),
-                  const SizedBox(height: AppSpace.sm),
-                  Text(
-                    'Ta et bilde, kartlegg hudsoner og få personlige anbefalinger.',
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  ),
-                  const SizedBox(height: AppSpace.lg),
-                  switch (scan.stage) {
-                    ScanStage.pickPhoto => _PickPhotoStep(scan: scan),
-                    ScanStage.zoneMap => _ZoneMapStep(scan: scan),
-                    ScanStage.result => _ResultStep(scan: scan),
-                  },
-                ],
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Hudscan',
+                style: Theme.of(context).textTheme.displaySmall,
               ),
-            ),
-            ),
-          ],
+              const SizedBox(height: AppSpace.sm),
+              Text(
+                'Ta et bilde, kartlegg hudsoner og få personlige anbefalinger.',
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+              const SizedBox(height: AppSpace.lg),
+              Expanded(
+                child: switch (scan.stage) {
+                  ScanStage.pickPhoto => _PickPhotoStep(scan: scan),
+                  ScanStage.zoneMap => _ZoneMapStep(scan: scan),
+                  ScanStage.result => _ResultStep(scan: scan),
+                },
+              ),
+            ],
+          ),
         );
       },
     );
@@ -69,25 +65,29 @@ class _PickPhotoStep extends StatelessWidget {
       children: [
         Text('Steg 1 · Velg bilde', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: AppSpace.md),
-        PressableCard(
-          onTap: () => scan.pickPhoto('assets/brand/logo.png'),
-          child: Column(
-            children: [
-              Container(
-                height: 220,
+        Expanded(
+          child: SingleChildScrollView(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Image.asset(
+                ScanService.stagedPortraitAsset,
                 width: double.infinity,
-                decoration: BoxDecoration(
-                  color: AppColors.blush.withValues(alpha: 0.25),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: const Icon(Icons.add_a_photo_outlined, size: 48),
+                fit: BoxFit.cover,
               ),
-              const SizedBox(height: AppSpace.md),
-              Text(
-                'Velg staged profilbilde',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-            ],
+            ),
+          ),
+        ),
+        const SizedBox(height: AppSpace.md),
+        Text(
+          'Staged profilbilde klart for hudscan',
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
+        const SizedBox(height: AppSpace.md),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: () => scan.pickPhoto(ScanService.stagedPortraitAsset),
+            child: const Text('Fortsett'),
           ),
         ),
       ],
@@ -102,41 +102,52 @@ class _ZoneMapStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final photoAsset = scan.pickedPhotoAsset ?? ScanService.stagedPortraitAsset;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Steg 2 · Soner', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: AppSpace.md),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: Stack(
-            children: [
-              Image.asset(
-                scan.pickedPhotoAsset ?? 'assets/brand/logo.png',
-                height: 280,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
-              Positioned.fill(
-                child: CustomPaint(
-                  painter: _ZonePainter(),
+        Expanded(
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Stack(
+                    children: [
+                      Image.asset(
+                        photoAsset,
+                        height: 220,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      ),
+                      Positioned.fill(
+                        child: CustomPaint(
+                          painter: _ZonePainter(),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: AppSpace.md),
+                Wrap(
+                  spacing: AppSpace.sm,
+                  runSpacing: AppSpace.sm,
+                  children: const [
+                    _ZoneChip(label: 'Panne · Fukt'),
+                    _ZoneChip(label: 'Kinn · Rødhet'),
+                    _ZoneChip(label: 'Nese · Urenheter'),
+                    _ZoneChip(label: 'Hake · Barriere'),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
-        const SizedBox(height: AppSpace.lg),
-        Wrap(
-          spacing: AppSpace.sm,
-          runSpacing: AppSpace.sm,
-          children: const [
-            _ZoneChip(label: 'Panne · Fukt'),
-            _ZoneChip(label: 'Kinn · Rødhet'),
-            _ZoneChip(label: 'Nese · Urenheter'),
-            _ZoneChip(label: 'Hake · Barriere'),
-          ],
-        ),
-        const SizedBox(height: AppSpace.lg),
+        const SizedBox(height: AppSpace.md),
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
@@ -162,40 +173,49 @@ class _ResultStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Steg 3 · Resultat', style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: AppSpace.md),
-        PressableCard(
-          onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (_) => const ScanResultView(),
-              ),
-            );
-          },
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                scan.latestResult?.summary ?? '',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              const SizedBox(height: AppSpace.sm),
-              Text(
-                'Se fullt resultat og anbefalinger',
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: AppColors.hover,
-                    ),
-              ),
-            ],
+    return CustomScrollView(
+      slivers: [
+        SliverPadding(
+          padding: const EdgeInsets.only(bottom: AppLayout.tabClearance),
+          sliver: SliverToBoxAdapter(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Steg 3 · Resultat', style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: AppSpace.md),
+                PressableCard(
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const ScanResultView(),
+                      ),
+                    );
+                  },
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        scan.latestResult?.summary ?? '',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      const SizedBox(height: AppSpace.sm),
+                      Text(
+                        'Se fullt resultat og anbefalinger',
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                              color: AppColors.hover,
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AppSpace.md),
+                OutlinedButton(
+                  onPressed: scan.reset,
+                  child: const Text('Ny scan'),
+                ),
+              ],
+            ),
           ),
-        ),
-        const SizedBox(height: AppSpace.md),
-        OutlinedButton(
-          onPressed: scan.reset,
-          child: const Text('Ny scan'),
         ),
       ],
     );
@@ -219,8 +239,12 @@ class _ZoneChip extends StatelessWidget {
 class _ZonePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = AppColors.blush.withValues(alpha: 0.55)
+    final fillPaint = Paint()
+      ..color = AppColors.blush.withValues(alpha: 0.18)
+      ..style = PaintingStyle.fill;
+
+    final strokePaint = Paint()
+      ..color = AppColors.blush.withValues(alpha: 0.85)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
 
@@ -233,10 +257,9 @@ class _ZonePainter extends CustomPainter {
     ];
 
     for (final zone in zones) {
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(zone, const Radius.circular(12)),
-        paint,
-      );
+      final rrect = RRect.fromRectAndRadius(zone, const Radius.circular(12));
+      canvas.drawRRect(rrect, fillPaint);
+      canvas.drawRRect(rrect, strokePaint);
     }
   }
 

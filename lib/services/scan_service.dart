@@ -17,6 +17,8 @@ class ScanService extends ChangeNotifier {
   static const onskeVerbatim =
       'Man ska kunna scanna ansiktet och få rekommendationer på vilka produkter som passar min hud';
 
+  static const stagedPortraitAsset = 'assets/scan/c6-staged-portrait.jpg';
+
   void reset() {
     _stage = ScanStage.pickPhoto;
     _pickedPhotoAsset = null;
